@@ -10,6 +10,7 @@ import NewPost from '../pages/NewPost';
 import Pagaments from '../pages/Pagaments';
 import PostsOng from '../pages/PostsOng';
 import Search from '../pages/Search';
+import Donate from '../pages/Donate';
 
 export default function AppRoutes() {
   const AppTabs = createBottomTabNavigator();
@@ -18,7 +19,12 @@ export default function AppRoutes() {
       screenOptions={{
         headerShown: false,
         tabBarActiveBackgroundColor: '#2E2E2E',
-        tabBarInactiveBackgroundColor: '#2E2E2E'
+        tabBarInactiveBackgroundColor: '#2E2E2E',
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          borderColor: '#2E2E2E',
+          backgroundColor: '#2E2E2E',
+        }
       }}
     >
       <AppTabs.Screen
@@ -84,6 +90,16 @@ function StackHome() {
           }
         }}
       />
+      <StackHome.Screen
+        name='Donate'
+        component={Donate}
+        options={{
+          headerTintColor: '#fff',
+          headerStyle: {
+            backgroundColor: '#2E2E2E',
+          }
+        }}
+      />
     </StackHome.Navigator>
   );
 }
@@ -103,6 +119,7 @@ function StackAccount() {
         component={Pagaments}
         options={{
           headerTintColor: '#fff',
+          title: 'Financeiro',
           headerStyle: {
             backgroundColor: '#2E2E2E',
           }

@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState, useCallback, useContext } from 'react';
-import { View, Text, ActivityIndicator, SafeAreaView, FlatList } from 'react-native';
+import { View, Text, ActivityIndicator, SafeAreaView, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import { AuthContext } from '../../contexts/auth'
@@ -19,7 +19,16 @@ export default function PostsOng() {
 
     useLayoutEffect(() => {
         navigation.setOptions({
-            title: title === '' ? '' : title
+            title: title === '' ? '' : title,
+            headerRight: () => (
+                user.typeUser === 'Donor' ? 
+                <TouchableOpacity
+                style={style.button}
+                onPress={() =>navigation.navigate('Donate', { title: title, userId: route.params?.userId })}>
+                  <Text style={{color: '#fff'}}>Doar</Text>
+                </TouchableOpacity>
+                : null
+              )
         })
     }, [navigation, title])
 
@@ -73,3 +82,14 @@ export default function PostsOng() {
         </SafeAreaView>
     )
 }
+
+const style = StyleSheet.create({
+    button: {
+      marginRight: 7,
+      padding: 5,
+      backgroundColor: '#418cfd',
+      borderRadius: 4,
+      justifyContent: 'center',
+      alignItems: 'center'
+    }
+  })

@@ -184,7 +184,7 @@ const style = StyleSheet.create({
   },
   buttonPost: {
     position: 'absolute',
-    bottom: '5%',
+    bottom: '2%',
     right: '6%',
     width: 60,
     height: 60,

@@ -231,8 +231,9 @@ export default function Login() {
             <Feather
               name="arrow-left"
               size={22}
+              color='#000'
             />
-            <Text color="#121212">Voltar</Text>
+            <Text style={{color: '#000'}}>Voltar</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[{ backgroundColor: "#428cfd" }, style.buttonModal]} onPress={handleDonor}>
             <Text style={[{ color: "#fff" }, style.buttonTextModal]}>SOU DOADOR</Text>

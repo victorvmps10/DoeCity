@@ -4,9 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 
-import { AuthContext } from '../../contexts/auth'
-
-import { Container, Input, Button, ButtonText } from './styles';
+import { AuthContext } from '../../contexts/auth';
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 
 export default function NewPost() {

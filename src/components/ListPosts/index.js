@@ -85,14 +85,14 @@ export default function PostsList({ data, userId }) {
       </TouchableOpacity>
 
       <View style={style.content}>
-        <Text>{data?.content}</Text>
+        <Text style={{color: '#121212'}}>{data?.content}</Text>
       </View>
 
       <View style={style.actions}>
         <TouchableOpacity 
         onPress={() => handleLikePost(data.id, likePost)}
         style={style.likeButton}>
-          <Text>
+          <Text style={{color: '#121212'}}>
             {likePost === 0 ? '' : likePost}
           </Text>
           <MaterialCommunityIcons
@@ -132,6 +132,7 @@ const style = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 5,
+    color: '#000'
   },
   avatar: {
     width: 40,
@@ -140,7 +141,6 @@ const style = StyleSheet.create({
     marginRight: 6,
   },
   content: {
-    color: '#353840',
     margin: 4,
   },
   actions: {
@@ -149,7 +149,7 @@ const style = StyleSheet.create({
     justifyContent: 'space-between',
   },
   timePost: {
-    color: ' #121212'
+    color: '#000'
   },
   likeButton: {
     width: 45,
