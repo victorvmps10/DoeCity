@@ -73,20 +73,13 @@ export default function Donate() {
             return;
         }
         setValue(newValue)
-        await updateData(newValue, number)
+        await updateData(newValue)
     }
-    async function updateData(newValue, number) {
+    async function updateData(newValue) {
         try {
-            const userProfile = await firestore().collection('users').doc(user.uid).get()
-            if(userProfile.exists){
-                const currentProgress = userProfile.data().progress || 0; 
-                const newProgress = currentProgress + (number * 5);
-                await firestore().collection('users').doc(user.uid).update({
-                    balance: newValue,
-                    progress: newProgress
-                })
-            
-            } 
+            await firestore().collection('users').doc(user.uid).update({
+                balance: newValue,
+            })
         } catch (error) {
             console.log('Certeza que desconectou a internet')
         }

@@ -1,32 +1,34 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function ListParticipants({ DATA }) {
     return (
         <View style={style.container}>
             <View style={style.header}>
-                <Image 
-                style={style.avatar}
-                source={require('../../assets/avatar.png')}/>
+                <Image
+                    style={style.avatar}
+                    source={DATA.photo} />
                 <Text style={style.name}>{DATA.name}</Text>
                 <Text style={style.name}> - {DATA.yearOld} anos</Text>
             </View>
 
             <Text style={style.content}>{DATA.work}</Text>
-            <View style={style.actions}>
-                <TouchableOpacity
-                    onPress={() => null}
-                    style={style.likeButton}>
-                    <Text style={{color: '#121212'}}>
-                        0
-                    </Text>
-                    <MaterialCommunityIcons
-                        name='heart-plus-outline'
-                        size={20}
-                        color="#E52246"
-                    />
-                </TouchableOpacity>
-            </View>
+                {DATA?.insta && (
+                    <TouchableOpacity
+                    style={[style.button, {backgroundColor: '#E1306C'}]}
+                        onPress={() => Linking.openURL(`https://instagram.com/${DATA.insta}`)}
+                    >
+                        <Text style={{fontSize: 25, color: '#fff'}}>Instagram</Text>
+                    </TouchableOpacity>
+                )}
+                {DATA?.github && (
+                    <TouchableOpacity
+                    style={[style.button, {backgroundColor: '#24292E'}]}
+                        onPress={() => Linking.openURL(`https://github.com/${DATA.github}`)}
+                    >
+                        <Text style={{fontSize: 25, color: '#fff'}}>GitHub</Text>
+                    </TouchableOpacity>
+                )}
         </View>
     );
 }
@@ -62,11 +64,6 @@ const style = StyleSheet.create({
         color: '#000',
         margin: 4,
     },
-    actions: {
-        flexDirection: 'row',
-        alignItems: 'baseline',
-        justifyContent: 'space-between',
-    },
     timePost: {
         color: '#000'
     },
@@ -79,5 +76,13 @@ const style = StyleSheet.create({
     like: {
         color: '#E52246',
         marginRight: 6,
+    },
+    button:{
+        margin: 5,
+        borderRadius: 5,
+        height: 45,
+        padding: 5,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 })

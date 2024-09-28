@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { formatDistance } from 'date-fns';
 import { ptBR } from 'date-fns/locale'
-import { useNavigation } from '@react-navigation/native'
-
+import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native'
 import firestore from '@react-native-firebase/firestore';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-export default function PostsList({ data, userId }) {
+import { Image, SafeAreaView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
+export default function PhotosList({ data, userId }) {
   const navigation = useNavigation();
   const [likePost, setLikePost] = useState(data?.likes)
-
+  const [likeActive, setLikeActive] = useState(true);
+  const isActive = useIsFocused();
   async function handleLikePost(id, likes) {
     const docId = `${userId}_${id}`;
-
     const doc = await firestore().collection('likes')
       .doc(docId).get();
-
     if (doc.exists) {
       await firestore().collection('posts')
         .doc(id).update({
@@ -26,6 +24,7 @@ export default function PostsList({ data, userId }) {
         .delete()
         .then(() => {
           setLikePost(likes - 1)
+          setLikeActive(false)
         })
 
       return;
@@ -39,12 +38,13 @@ export default function PostsList({ data, userId }) {
         userId: userId
       })
 
-    await firestore().collection('posts')
+    await firestore().collection('postsPhotos')
       .doc(id).update({
         likes: likes + 1
       })
       .then(() => {
         setLikePost(likes + 1)
+        setLikeActive(true)
       })
 
 
@@ -62,12 +62,24 @@ export default function PostsList({ data, userId }) {
     )
   }
 
+  useEffect(() => {
+    async function loadAvatar() {
+      const docId = `${userId}_${data.id}`;
+      const doc = await firestore().collection('likes')
+        .doc(docId).get();
 
+      if (!doc.exists) {
+        setLikeActive(false)
+      }
+    }
+    loadAvatar();
+    return () => loadAvatar();
+  }, [isActive])
   return (
     <SafeAreaView style={style.container}>
-      <TouchableOpacity 
-      style={style.header}
-      onPress={() => navigation.navigate("PostsOng", { title: data.autor, userId: data.userId })}>
+      <TouchableOpacity
+        style={style.header}
+        onPress={() => navigation.navigate("PostsOng", { title: data.autor, userId: data.userId })}>
         {data.avatarUrl ? (
           <Image
             source={{ uri: data.avatarUrl }}
@@ -85,18 +97,18 @@ export default function PostsList({ data, userId }) {
       </TouchableOpacity>
 
       <View style={style.content}>
-        <Text style={{color: '#121212'}}>{data?.content}</Text>
+        <Text style={{ color: '#121212' }}>{data?.content}</Text>
       </View>
 
       <View style={style.actions}>
-        <TouchableOpacity 
-        onPress={() => handleLikePost(data.id, likePost)}
-        style={style.likeButton}>
-          <Text style={{color: '#121212'}}>
+        <TouchableOpacity
+          onPress={() => handleLikePost(data.id, likePost)}
+          style={style.likeButton}>
+          <Text style={{ color: '#121212' }}>
             {likePost === 0 ? '' : likePost}
           </Text>
           <MaterialCommunityIcons
-            name={likePost === 0 ? 'heart-plus-outline' : 'cards-heart'}
+            name={likeActive ? 'cards-heart' : 'heart-plus-outline'}
             size={20}
             color="#E52246"
           />

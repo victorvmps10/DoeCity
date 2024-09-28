@@ -1,6 +1,7 @@
 import {
   SafeAreaView, View, StyleSheet, Text, TouchableOpacity, TextInput, ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useIsFocused, useNavigation } from '@react-navigation/native';
@@ -59,7 +60,21 @@ export default function Pagaments() {
     getData();
   }, [isActive])
   async function handleAdd(number) {
+    if(Number(number) === NaN){
+      setValueAdd('');
+      return;
+    }
     const newValue = Number(value) + Number(number);
+    if(newValue === NaN){
+      if(value === NaN){
+        await updateData(Number(number))
+      }
+      return;
+    }
+    if(newValue > 3000000){
+      Alert.alert('Atenção', 'valor acima do limite');
+      return;
+    } 
     setValue(newValue)
     await updateData(newValue)
   }

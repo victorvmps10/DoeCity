@@ -11,6 +11,7 @@ import Pagaments from '../pages/Pagaments';
 import PostsOng from '../pages/PostsOng';
 import Search from '../pages/Search';
 import Donate from '../pages/Donate';
+import Feedback from '../pages/Feedback';
 
 export default function AppRoutes() {
   const AppTabs = createBottomTabNavigator();
@@ -50,7 +51,7 @@ export default function AppRoutes() {
       />
       <AppTabs.Screen
         name='Info'
-        component={Info}
+        component={StackInfo}
         options={{
           tabBarIcon: ({ size, color }) => <MaterialCommunityIcons name='information' size={size} color={color} />
         }}
@@ -129,17 +130,17 @@ function StackAccount() {
   );
 }
 function StackDiscover() {
-  const StackAccount = createNativeStackNavigator();
+  const StackDiscover = createNativeStackNavigator();
   return (
-    <StackAccount.Navigator>
-      <StackAccount.Screen
+    <StackDiscover.Navigator>
+      <StackDiscover.Screen
         name='DiscoverPage'
         component={Discover}
         options={{
           headerShown: false
         }}
       />
-      <StackAccount.Screen
+      <StackDiscover.Screen
         name='Search'
         component={Search}
         options={{
@@ -150,6 +151,32 @@ function StackDiscover() {
           }
         }}
       />
-    </StackAccount.Navigator>
+    </StackDiscover.Navigator>
+  );
+}
+
+function StackInfo() {
+  const StackInfo = createNativeStackNavigator();
+  return (
+    <StackInfo.Navigator>
+      <StackInfo.Screen
+        name='InfoPage'
+        component={Info}
+        options={{
+          headerShown: false
+        }}
+      />
+      <StackInfo.Screen
+        name='Feedback'
+        component={Feedback}
+        options={{
+          headerTintColor: '#fff',
+          title: 'Avaliação',
+          headerStyle: {
+            backgroundColor: '#2E2E2E',
+          }
+        }}
+      />
+    </StackInfo.Navigator>
   );
 }

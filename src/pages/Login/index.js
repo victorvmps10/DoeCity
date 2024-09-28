@@ -7,13 +7,16 @@ import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../../contexts/auth';
 import Feather from 'react-native-vector-icons/Feather';
+import { Picker } from '@react-native-picker/picker';
 export default function Login() {
   const [type, setType] = useState(false);
   const [recoveryType, setRecoveryType] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [location, setLocation] = useState('');
   const [ongType, setOngType] = useState(false);
+  const [site, setSite] = useState('');
   const [code, setCode] = useState('');
   const { signed, loading, loadingAuth, signIn, signUp, recoveryAccount, setDonor } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
@@ -24,7 +27,7 @@ export default function Login() {
       Alert.alert('Atenção', 'Preencha os campos')
       return;
     }
-    await signUp(email, password, name, code)
+    await signUp(email, password, name, code, site, location)
   }
   async function handleSignIn() {
     if (email === '' || password === '') {
@@ -144,15 +147,39 @@ export default function Login() {
                   style={{ marginRight: 8 }} />
               </TouchableOpacity>
             </View>
-            {ongType ? (
-              <TextInput
-                style={style.input}
-                placeholder='Codigo de verificação'
-                placeholderTextColor='#000'
-                value={code}
-                onChangeText={(text) => setCode(text)}
-              />
-            ) : null}
+            <View style={style.picker}>
+              <Picker
+                selectedValue={location}
+                onValueChange={(itemValue, itemIndex) => { setLocation(itemValue) }}
+
+              >
+                <Picker.Item label="Praia Grande - SP" value="Praia Grande - SP" />
+                <Picker.Item label="Santos - SP" value="Santos - SP" />
+                <Picker.Item label="Guaruja - SP" value="Guaruja - SP" />
+                <Picker.Item label="São Vicente - SP" value="São Vicente - SP" />
+                <Picker.Item label="São Paulo - SP" value="São Paulo - SP" />
+                <Picker.Item label="Mongaguá - SP" value="Mongaguá - SP" />
+                <Picker.Item label="Itanhaem - SP" value="Itanhaem - SP" />
+              </Picker>
+            </View>
+            {ongType && (
+              <View>
+                <TextInput
+                  style={style.input}
+                  placeholder='www.nomeong.org'
+                  placeholderTextColor='#000'
+                  value={site}
+                  onChangeText={(text) => setSite(text)}
+                />
+                <TextInput
+                  style={style.input}
+                  placeholder='Codigo de verificação'
+                  placeholderTextColor='#000'
+                  value={code}
+                  onChangeText={(text) => setCode(text)}
+                />
+              </View>
+            )}
           </View>
 
           <TouchableOpacity style={style.button} onPress={handleSingUp}>
@@ -233,7 +260,7 @@ export default function Login() {
               size={22}
               color='#000'
             />
-            <Text style={{color: '#000'}}>Voltar</Text>
+            <Text style={{ color: '#000' }}>Voltar</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[{ backgroundColor: "#428cfd" }, style.buttonModal]} onPress={handleDonor}>
             <Text style={[{ color: "#fff" }, style.buttonTextModal]}>SOU DOADOR</Text>
@@ -349,5 +376,12 @@ const style = StyleSheet.create({
     borderRadius: 15,
     height: 45,
     padding: 2
+  },
+  picker: {
+    borderRadius: 15,
+    backgroundColor: '#D9D9D9',
+    height: 45,
+    margin: 5,
+    justifyContent: 'center'
   }
 })

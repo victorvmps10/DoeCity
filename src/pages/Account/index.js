@@ -174,65 +174,15 @@ export default function Account() {
         if (user.typeUser === 'Donor') {
           let response = await storage().ref('users').child(user?.uid).getDownloadURL();
           setUrl(response);
+          setLoadingData(false)
         } else {
           let response = await storage().ref('ongs').child(user?.uid).getDownloadURL();
           setUrl(response);
+          setLoadingData(false)
         }
       } catch (err) {
         console.log("NAO ENCONTRAMOS NENHUMA FOTO")
-      }
-      try {
-        if (user.typeUser === 'Donor') {
-          const userProfile = await firestore().collection('users').doc(user.uid).get();
-          const PROGRESSDATA = userProfile.data().progress;
-          setProgress(PROGRESSDATA)
-          if (PROGRESSDATA < 50) {
-            setRankColor('#FF5733')
-            let RankSystem = 'BRONZE I';
-            setRank(RankSystem)
-          } else if (PROGRESSDATA >= 50 && PROGRESSDATA <= 150) {
-            setRankColor('#FF5733')
-            let RankSystem = 'BRONZE II';
-            setRank(RankSystem)
-          } else if (PROGRESSDATA >= 151 && PROGRESSDATA <= 300) {
-            setRankColor('#FF5733')
-            let RankSystem = 'BRONZE III';
-            setRank(RankSystem)
-          } else if (PROGRESSDATA >= 301 && PROGRESSDATA <= 500) {
-            setRankColor('#696969')
-            let RankSystem = 'PRATA I';
-            setRank(RankSystem)
-          } else if (PROGRESSDATA >= 501 && PROGRESSDATA <= 700) {
-            setRankColor('#696969')
-            let RankSystem = 'PRATA II';
-            setRank(RankSystem)
-          } else if (PROGRESSDATA >= 701 && PROGRESSDATA <= 1000) {
-            setRankColor('#696969')
-            let RankSystem = 'PRATA III';
-            setRank(RankSystem)
-          } else if (PROGRESSDATA >= 1001 && PROGRESSDATA <= 2000) {
-            setRankColor('#ffd700')
-            let RankSystem = 'OURO I';
-            setRank(RankSystem)
-          } else if (PROGRESSDATA >= 2001 && PROGRESSDATA <= 4000) {
-            setRankColor('#ffd700')
-            let RankSystem = 'OURO II';
-            setRank(RankSystem)
-          } else if (PROGRESSDATA >= 4001 && PROGRESSDATA <= 5000) {
-            setRankColor('#ffd700')
-            let RankSystem = ' -OURO III';
-            setRank(RankSystem)
-          } else if (PROGRESSDATA >= 5001) {
-            setRankColor('#B9F2FF')
-            let RankSystem = 'DIAMANTE I';
-            setRank(RankSystem)
-          }
-          setLoadingData(false)
-          setProgress(PROGRESSDATA)
-        }
         setLoadingData(false)
-      } catch (error) {
-
       }
     }
 
@@ -269,12 +219,6 @@ export default function Account() {
 
             <Text style={style.name}>{user?.name}</Text>
             <Text style={style.email}>{user?.email}</Text>
-            {user.typeUser === 'Donor' && (
-              <TouchableOpacity style={[style.rankContainer, { backgroundColor: `${rankColor}` }]}>
-                <Text style={[{ color: "#000" }, style.buttonText]}>RANK - PONTOS {progress}</Text>
-                <Text style={[{ color: "#000" }, style.buttonText]}>{rank}</Text>
-              </TouchableOpacity>
-            )}
             <TouchableOpacity style={[{ backgroundColor: "#51C880" }, style.button]} onPress={handlePagaments}>
               <Text style={[{ color: "#FFF" }, style.buttonText]}>Financeiro</Text>
             </TouchableOpacity>
@@ -312,10 +256,7 @@ export default function Account() {
                   ) : (
                     <Text style={[{ color: "#fff" }, style.buttonText]}>Salvar</Text>
                   )}
-
                 </TouchableOpacity>
-
-
               </KeyboardAvoidingView>
             </Modal>
 
@@ -408,12 +349,4 @@ const style = StyleSheet.create({
     color: '#121212',
     textAlign: 'center'
   },
-  rankContainer: {
-    height: 90,
-    width: '80%',
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
-  }
 })

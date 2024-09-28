@@ -34,7 +34,7 @@ export default function AuthProvider({ children }) {
 
 
 
-    async function signUp(email, password, name, code) {
+    async function signUp(email, password, name, code, site, location) {
         setLoadingAuth(true);
         if(!donor){
             if(code !== 'Duda'){
@@ -52,10 +52,9 @@ export default function AuthProvider({ children }) {
                             name: name,
                             email: email,
                             balance: 0,
-                            city: '',
                             typeUser: 'Donor',
-                            progress: 0,
                             createdAt: new Date(),
+                            location: location
                         })
                         .then(() => {
                             let data = {
@@ -75,10 +74,10 @@ export default function AuthProvider({ children }) {
                             name: name,
                             email: email,
                             balance: 0,
-                            city: '',
                             typeUser: 'Ong',
-                            progress: 0,
                             createdAt: new Date(),
+                            site: site,
+                            location: location
                         })
                         .then(() => {
                             let data = {
@@ -103,7 +102,6 @@ export default function AuthProvider({ children }) {
 
     async function signIn(email, password) {
         setLoadingAuth(true);
-
         await auth().signInWithEmailAndPassword(email, password)
             .then(async (value) => {
                 let uid = value.user.uid;

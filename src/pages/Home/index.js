@@ -7,7 +7,7 @@ import { AuthContext } from '../../contexts/auth'
 import firestore from '@react-native-firebase/firestore';
 
 import Header from '../../components/Header'
-import ListPosts from '../../components/ListPosts';
+import ListPosts from '../../components/PostsList';
 
 export default function Home() {
   const navigation = useNavigation();
