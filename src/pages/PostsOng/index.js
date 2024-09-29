@@ -6,7 +6,7 @@ import { AuthContext } from '../../contexts/auth'
 
 import firestore from '@react-native-firebase/firestore';
 
-import ListPosts from '../../components/PostsList';
+import PostsList from '../../components/PostsList';
 import PhotosList from '../../components/PhotosList';
 
 export default function PostsOng() {
@@ -69,7 +69,7 @@ export default function PostsOng() {
                     const postPhotoList = [];
 
                     snapshot.docs.map(u => {
-                        postList.push({
+                        postPhotoList.push({
                             ...u.data(),
                             id: u.id
                         })
@@ -159,7 +159,7 @@ export default function PostsOng() {
                             style={{ flex: 1, backgroundColor: '#36393F' }}
                             showsVerticalScrollIndicator={false}
                             data={postsPhotos}
-                            renderItem={({ item }) => <ListPosts data={item} userId={user.uid} />}
+                            renderItem={({ item }) => <PhotosList data={item} userId={user.uid} />}
                         />
                     </View>
 
@@ -198,7 +198,7 @@ export default function PostsOng() {
                         style={{ flex: 1, backgroundColor: '#36393F' }}
                         showsVerticalScrollIndicator={false}
                         data={posts}
-                        renderItem={({ item }) => <ListPosts data={item} userId={user.uid} />}
+                        renderItem={({ item }) => <PostsList data={item} userId={user.uid} />}
                     />
                 </View>
 

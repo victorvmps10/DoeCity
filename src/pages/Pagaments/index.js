@@ -67,7 +67,8 @@ export default function Pagaments() {
     const newValue = Number(value) + Number(number);
     if(newValue === NaN){
       if(value === NaN){
-        await updateData(Number(number))
+        await updateData(0)
+        setValue(0)
       }
       return;
     }

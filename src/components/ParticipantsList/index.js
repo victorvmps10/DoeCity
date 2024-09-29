@@ -1,7 +1,7 @@
 import { Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-export default function ListParticipants({ DATA }) {
+export default function ParticipantsList({ DATA }) {
     return (
         <View style={style.container}>
             <View style={style.header}>
@@ -41,6 +41,7 @@ const style = StyleSheet.create({
         borderRadius: 8,
         elevation: 3,
         padding: 11,
+        height: 200
     },
     header: {
         width: '100%',

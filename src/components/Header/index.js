@@ -5,6 +5,7 @@ export default function Header({name, press}) {
     return (
         <View style={style.container}>
             <Text style={[style.title, { color: '#FFF' }]}>Doe<Text style={{ color: '#00B2FF' }}>City</Text></Text>
+            
             <TouchableOpacity 
             style={style.button}
             onPress={press}

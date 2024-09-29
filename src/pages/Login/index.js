@@ -151,7 +151,7 @@ export default function Login() {
               <Picker
                 selectedValue={location}
                 onValueChange={(itemValue, itemIndex) => { setLocation(itemValue) }}
-
+                style={{color: '#000'}}
               >
                 <Picker.Item label="Praia Grande - SP" value="Praia Grande - SP" />
                 <Picker.Item label="Santos - SP" value="Santos - SP" />

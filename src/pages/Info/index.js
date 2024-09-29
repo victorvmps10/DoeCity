@@ -1,6 +1,6 @@
 import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal, Linking } from 'react-native';
 import Header from '../../components/Header';
-import ListParticipants from '../../components/ListParticipants';
+import ParticipantsList from '../../components/ParticipantsList';
 import Feather from 'react-native-vector-icons/Feather';
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
@@ -73,11 +73,11 @@ export default function Info() {
         <Text style={style.title}>Participantes: </Text>
         <FlatList
           data={DATA}
-          renderItem={({ item }) => <ListParticipants DATA={item} />}
+          renderItem={({ item }) => <ParticipantsList DATA={item} />}
           showsHorizontalScrollIndicator={false}
           horizontal={true}
         />
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
           <Text style={style.title}>Detalhes Tecnicos:</Text>
           <Text
             style={[style.textTec, { fontWeight: 'bold', fontSize: 15, textAlign: 'center' }]}>

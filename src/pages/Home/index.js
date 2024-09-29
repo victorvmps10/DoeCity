@@ -7,7 +7,7 @@ import { AuthContext } from '../../contexts/auth'
 import firestore from '@react-native-firebase/firestore';
 
 import Header from '../../components/Header'
-import ListPosts from '../../components/PostsList';
+import PostsList from '../../components/PostsList';
 
 export default function Home() {
   const navigation = useNavigation();
@@ -133,7 +133,7 @@ export default function Home() {
 
   return (
     <SafeAreaView style={style.container}>
-      <Header name='list' />
+      <Header/>
       {loading ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size={50} color="#00B2FF" />
@@ -144,7 +144,7 @@ export default function Home() {
           style={style.listPosts}
           data={posts}
           renderItem={({ item }) => (
-            <ListPosts
+            <PostsList
               data={item}
               userId={user?.uid}
             />
@@ -159,7 +159,7 @@ export default function Home() {
         />
       )}
 
-      {user.typeUser == 'Donor' ? null :
+      {user.typeUser == 'Ong' &&
         <TouchableOpacity
           style={style.buttonPost}
           activeOpacity={0.8}
