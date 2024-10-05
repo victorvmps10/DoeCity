@@ -1,7 +1,7 @@
 import {
     SafeAreaView, View, StyleSheet, Text, TouchableOpacity, TextInput, ScrollView,
-    ActivityIndicator,
-    Alert
+    ActivityIndicator, Alert, KeyboardAvoidingView,
+    Keyboard
 } from 'react-native';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useFocusEffect, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
@@ -18,8 +18,8 @@ export default function Donate() {
     const [name, setName] = useState('');
     const [location, setLocation] = useState('');
     const [loading, setLoading] = useState(false);
-    const [verification, setVerification] = useState(false);
-    const [type, setType] = useState(false);
+    const [ongBalance, setOngBalance] = useState(0);
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
     const navigation = useNavigation();
     const { user } = useContext(AuthContext);
     useEffect(() => {
@@ -36,11 +36,12 @@ export default function Donate() {
                 if (!userProfile.exists) {
                     await getDataOng();
                 } else {
+                    const ongData = await firestore().collection('ongs').doc(route.params?.userId).get();
+                    setOngBalance(ongData.data().balance);
                     const userData = userProfile.data();
                     setName(userData.name);
                     setValue(userData.balance);
                     setLocation(userData.city);
-                    setType(false);
                 }
             } catch (error) {
                 console.error("Usuario sem internet ctz: ", error);
@@ -57,7 +58,6 @@ export default function Donate() {
                     setName(ongData.name);
                     setValue(ongData.balance);
                     setLocation(ongData.city);
-                    setType(true);
                 }
             } catch (error) {
                 console.log("Usuario tá de hack: ", error);
@@ -65,6 +65,18 @@ export default function Donate() {
         }
 
         getData();
+
+        const keyboardShowListener = Keyboard.addListener('keyboardDidShow', () => {
+            setKeyboardVisible(true);
+        });
+
+        const keyboardHideListener = Keyboard.addListener('keyboardDidHide', () => {
+            setKeyboardVisible(false);
+        });
+        return () => {
+            keyboardShowListener.remove();
+            keyboardHideListener.remove();
+        };
     }, [isActive])
     async function handleAdd(number) {
         const newValue = value - number;
@@ -76,46 +88,69 @@ export default function Donate() {
             if (value === NaN) {
                 await updateData(0)
                 setValue(0)
+                return;
             }
         }
-            setValue(newValue)
-            await updateData(newValue)
-        }
-        async function updateData(newValue) {
-            try {
-                await firestore().collection('users').doc(user.uid).update({
-                    balance: newValue,
+        try {
+            let valueOng = Math.abs(Number(number))
+            const newValueOng = Number(valueOng) + Number(ongBalance);
+            if (newValueOng < 300000) {
+                await firestore().collection('ongs').doc(route.params?.userId).update({
+                    balance: newValueOng,
                 })
-            } catch (error) {
-                console.log('Certeza que desconectou a internet')
+                    .then(async () => {
+                        await updateData(newValue)
+                        Alert.alert('Sucesso', `Sua doação foi enviada a: ${title}`)
+                    })
+            } else if (isNaN(newValueOng)) {
+                Alert.alert('Aviso', 'Adicione valor valido')
+            } else {
+                Alert.alert('Aviso', 'ONG com saldo maximo')
             }
 
+        } catch (error) {
+            console.log(error)
         }
-        return (
-            <SafeAreaView style={{ flex: 1, backgroundColor: '#353840' }}>
-                {loading ?
-                    <View style={{ flex: 1 }}>
-                        <View style={style.containerLoading}>
-                            <ActivityIndicator size={80} color="#428cfd" />
-                        </View>
+        setValue(newValue)
+    }
+    async function updateData(newValue) {
+        try {
+            await firestore().collection('users').doc(user.uid).update({
+                balance: newValue,
+            })
+        } catch (error) {
+            console.log('Certeza que desconectou a internet')
+        }
+
+    }
+    return (
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#353840' }}>
+            {loading ?
+                <View style={{ flex: 1 }}>
+                    <View style={style.containerLoading}>
+                        <ActivityIndicator size={80} color="#428cfd" />
                     </View>
-                    :
-                    <SafeAreaView style={{ flex: 1 }}>
-                        <View style={{ alignItems: 'center', justifyContent: 'center', }}>
-                            <Text style={style.text}>Seu Nome: {name}</Text>
-                            <Text style={style.text}> Sua Localidade: {location}</Text>
-                            <Text style={style.text}>
-                                Seu saldo: R${value}
-                            </Text>
-                        </View>
-                        {user.typeUser === 'Donor' ? (
-                            <View>
+                </View>
+                :
+                <SafeAreaView style={{ flex: 1 }}>
+                    <View style={{ alignItems: 'center', justifyContent: 'center', }}>
+                        <Text style={style.text}>Seu Nome: {name}</Text>
+                        <Text style={style.text}> Sua Localidade: {location}</Text>
+                        <Text style={style.text}>
+                            Seu saldo: R${value}
+                        </Text>
+                    </View>
+                    {user.typeUser === 'Donor' ? (
+                        <View>
+                            <KeyboardAvoidingView
+                                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                            >
                                 <Text style={style.textAdd}>Adicionar Valor para doar:</Text>
                                 <View style={style.containerAdd}>
                                     <TextInput
                                         style={style.input}
                                         textContentType='number'
-                                        keyboardType='number-pad'
+                                        keyboardType='numeric'
                                         placeholder="Adicionar saldo"
                                         value={valueAdd}
                                         onChangeText={(text) => setValueAdd(text)}
@@ -185,15 +220,15 @@ export default function Donate() {
                                     >
                                         <Text style={style.textButtonAdd}>R$500</Text>
                                     </TouchableOpacity>
-
                                 </View>
-                            </View>
-                        ) : (
-                            <View>
-                                <Text style={style.textAdd}>ONGs não podem doar para outras ONGs</Text>
-                            </View>
-                        )}
-
+                            </KeyboardAvoidingView>
+                        </View>
+                    ) : (
+                        <View>
+                            <Text style={style.textAdd}>ONGs não podem doar para outras ONGs</Text>
+                        </View>
+                    )}
+                    {!keyboardVisible && (
                         <View style={{ position: 'absolute', bottom: 5, alignItems: 'center', marginHorizontal: 5 }}>
                             <Text style={style.textAlert}>
                                 Obs: O sistema de pagamento do aplicativo é conceitual,
@@ -201,84 +236,86 @@ export default function Donate() {
                                 questões de segurança, pois é só a ideia de como seria.
                             </Text>
                         </View>
-                    </SafeAreaView>
-                }
-            </SafeAreaView>
-        );
-    }
+                    )}
 
-    const style = StyleSheet.create({
-        containerAdd: {
-            width: '95%',
-            color: "#000",
-            borderWidth: 2,
-            flexDirection: 'row',
-            margin: 10,
-            paddingLeft: 10,
-            paddingRight: 10,
-            borderRadius: 9,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: '#D9D9D9',
-        },
-        textHeader: {
-            color: 'black',
-            fontSize: 40,
-            marginLeft: 10
-        },
-        text: {
-            fontSize: 20,
-            color: '#fff',
-            margin: 5,
-            textAlign: 'center'
-        },
-        containerButtonAdd: {
-            backgroundColor: '#00f',
-            borderRadius: 10,
-            margin: 10,
-            padding: 5
-        },
-        textButtonAdd: {
-            color: '#fff',
-            fontSize: 15,
-        },
-        textAdd: {
-            fontSize: 20,
-            color: '#fff',
-            margin: 5,
-            marginLeft: 15
-        },
-        textAlert: {
-            fontSize: 15,
-            color: '#fff',
-            margin: 5,
-            textAlign: 'center',
-        },
-        rowAdd: {
-            flexDirection: 'row',
-            padding: 5,
-        },
-        buttonAdd: {
-            backgroundColor: '#0000ff',
-            padding: 5,
-            margin: 5,
-            borderRadius: 10
-        },
-        textButtonAdd: {
-            color: '#fff',
-            fontSize: 20
-        },
-        input: {
-            margin: 10,
-            borderRadius: 9,
-            height: 40,
-            width: '80%',
-            color: '#000',
-            fontSize: 15
-        },
-        containerLoading: {
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
-    })
+                </SafeAreaView>
+            }
+        </SafeAreaView>
+    );
+}
+
+const style = StyleSheet.create({
+    containerAdd: {
+        width: '95%',
+        color: "#000",
+        borderWidth: 2,
+        flexDirection: 'row',
+        margin: 10,
+        paddingLeft: 10,
+        paddingRight: 10,
+        borderRadius: 9,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#D9D9D9',
+    },
+    textHeader: {
+        color: 'black',
+        fontSize: 40,
+        marginLeft: 10
+    },
+    text: {
+        fontSize: 20,
+        color: '#fff',
+        margin: 5,
+        textAlign: 'center'
+    },
+    containerButtonAdd: {
+        backgroundColor: '#00f',
+        borderRadius: 10,
+        margin: 10,
+        padding: 5
+    },
+    textButtonAdd: {
+        color: '#fff',
+        fontSize: 15,
+    },
+    textAdd: {
+        fontSize: 20,
+        color: '#fff',
+        margin: 5,
+        marginLeft: 15
+    },
+    textAlert: {
+        fontSize: 15,
+        color: '#fff',
+        margin: 5,
+        textAlign: 'center',
+    },
+    rowAdd: {
+        flexDirection: 'row',
+        padding: 5,
+    },
+    buttonAdd: {
+        backgroundColor: '#0000ff',
+        padding: 5,
+        margin: 5,
+        borderRadius: 10
+    },
+    textButtonAdd: {
+        color: '#fff',
+        fontSize: 20
+    },
+    input: {
+        margin: 10,
+        borderRadius: 9,
+        height: 40,
+        width: '80%',
+        color: '#000',
+        fontSize: 15
+    },
+    containerLoading: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+})

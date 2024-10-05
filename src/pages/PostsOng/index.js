@@ -8,6 +8,7 @@ import firestore from '@react-native-firebase/firestore';
 
 import PostsList from '../../components/PostsList';
 import PhotosList from '../../components/PhotosList';
+import DetailOng from '../../components/DetailOng';
 
 export default function PostsOng() {
     const route = useRoute();
@@ -38,7 +39,6 @@ export default function PostsOng() {
     useFocusEffect(
         useCallback(() => {
             let isActive = true;
-
             firestore()
                 .collection('posts')
                 .where('userId', '==', route.params?.userId)
@@ -112,15 +112,10 @@ export default function PostsOng() {
                                 style={[style.typeButton, { backgroundColor: '#51C880' }]}
                                 onPress={() => { setPhotosOng(false); setFinanceOng(true) }}
                             >
-                                <Text style={style.typeText}>Relatorio</Text>
+                                <Text style={style.typeText}>Detalhes</Text>
                             </TouchableOpacity>
                         </View>
-                        <FlatList
-                            style={{ flex: 1, backgroundColor: '#36393F' }}
-                            showsVerticalScrollIndicator={false}
-                            data={postsPhotos}
-                            renderItem={({ item }) => <ListPosts data={item} userId={user.uid} />}
-                        />
+                        <DetailOng userId={route.params?.userId}/>
                     </View>
 
                 )}
@@ -152,7 +147,7 @@ export default function PostsOng() {
                                 style={[style.typeButton]}
                                 onPress={() => { setPhotosOng(false); setFinanceOng(true) }}
                             >
-                                <Text style={style.typeText}>Relatorio</Text>
+                                <Text style={style.typeText}>Detalhes</Text>
                             </TouchableOpacity>
                         </View>
                         <FlatList
@@ -191,7 +186,7 @@ export default function PostsOng() {
                             style={[style.typeButton]}
                             onPress={() => { setPhotosOng(false); setFinanceOng(true) }}
                         >
-                            <Text style={style.typeText}>Relatorio</Text>
+                            <Text style={style.typeText}>Detalhes</Text>
                         </TouchableOpacity>
                     </View>
                     <FlatList

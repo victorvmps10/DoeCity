@@ -34,7 +34,7 @@ export default function AuthProvider({ children }) {
 
 
 
-    async function signUp(email, password, name, code, site, location) {
+    async function signUp(email, password, name, code, location) {
         setLoadingAuth(true);
         if(!donor){
             if(code !== 'Duda'){
@@ -54,14 +54,16 @@ export default function AuthProvider({ children }) {
                             balance: 0,
                             typeUser: 'Donor',
                             createdAt: new Date(),
-                            location: location
+                            location: location,
                         })
                         .then(() => {
                             let data = {
                                 uid: uid,
                                 name: name,
                                 email: value.user.email,
-                                typeUser: 'Donor'
+                                typeUser: 'Donor',
+                                about: '',
+                                site: '',
                             }
 
                             setUser(data);
@@ -76,17 +78,20 @@ export default function AuthProvider({ children }) {
                             balance: 0,
                             typeUser: 'Ong',
                             createdAt: new Date(),
-                            site: site,
-                            location: location
+                            site: `https://www.google.com/search?q=${name}`,
+                            location: location,
+                            about: ''
                         })
                         .then(() => {
                             let data = {
                                 uid: uid,
                                 name: name,
                                 email: value.user.email,
-                                typeUser: 'Ong'
+                                typeUser: 'Ong',
+                                site: `https://www.google.com/search?q=${name}`,
+                                about: ''
                             }
-
+                            Alert.alert('Aviso', 'Vá em conta e insira o site e um texto sobre vcs!!!')
                             setUser(data);
                             storageUser(data);
                             setLoadingAuth(false);
@@ -95,6 +100,7 @@ export default function AuthProvider({ children }) {
             })
             .catch((error) => {
                 console.log(error);
+                Alert.alert('Erro', `${error}`);
                 setLoadingAuth(false);
             })
     }
@@ -112,7 +118,9 @@ export default function AuthProvider({ children }) {
                         uid: uid,
                         name: userProfile.data().name,
                         email: value.user.email,
-                        typeUser: 'Donor'
+                        typeUser: 'Donor',
+                        about: '',
+                        site: '',
                     };
                     setUser(data);
                     storageUser(data);
@@ -124,7 +132,9 @@ export default function AuthProvider({ children }) {
                         uid: uid,
                         name: ongProfile.data().name,
                         email: value.user.email,
-                        typeUser: 'Ong'
+                        typeUser: 'Ong',
+                        about: ongProfile.data().about,
+                        site: ongProfile.data().site,
                     };
                     setUser(data);
                     storageUser(data);

@@ -1,12 +1,14 @@
 import { useContext, useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, Platform,
-  SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Modal
+  SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Modal,
+  TouchableWithoutFeedback
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../../contexts/auth';
 import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Picker } from '@react-native-picker/picker';
 export default function Login() {
   const [type, setType] = useState(false);
@@ -16,7 +18,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [location, setLocation] = useState('');
   const [ongType, setOngType] = useState(false);
-  const [site, setSite] = useState('');
   const [code, setCode] = useState('');
   const { signed, loading, loadingAuth, signIn, signUp, recoveryAccount, setDonor } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
@@ -27,7 +28,7 @@ export default function Login() {
       Alert.alert('Atenção', 'Preencha os campos')
       return;
     }
-    await signUp(email, password, name, code, site, location)
+    await signUp(email, password, name, code, location)
   }
   async function handleSignIn() {
     if (email === '' || password === '') {
@@ -151,7 +152,7 @@ export default function Login() {
               <Picker
                 selectedValue={location}
                 onValueChange={(itemValue, itemIndex) => { setLocation(itemValue) }}
-                style={{color: '#000'}}
+                style={{color: '#000', placeholderTextColor: '#000'}}
               >
                 <Picker.Item label="Praia Grande - SP" value="Praia Grande - SP" />
                 <Picker.Item label="Santos - SP" value="Santos - SP" />
@@ -164,13 +165,6 @@ export default function Login() {
             </View>
             {ongType && (
               <View>
-                <TextInput
-                  style={style.input}
-                  placeholder='www.nomeong.org'
-                  placeholderTextColor='#000'
-                  value={site}
-                  onChangeText={(text) => setSite(text)}
-                />
                 <TextInput
                   style={style.input}
                   placeholder='Codigo de verificação'
@@ -250,8 +244,12 @@ export default function Login() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-      <Modal visible={open} animationType="slide" transparent={true}>
-        <View style={style.modalContainer}>
+      <Modal visible={open} animationType="fade" transparent={true}>
+      <View style={style.modalContainer}>
+          <TouchableWithoutFeedback onPress={() => setOpen(false)}>
+            <View style={style.modal}></View>
+          </TouchableWithoutFeedback>
+        <View style={style.modalContent}>
           <TouchableOpacity
             style={style.buttonBack}
             onPress={() => setOpen(false)}>
@@ -269,7 +267,7 @@ export default function Login() {
             <Text style={[{ color: "#fff" }, style.buttonTextModal]}>SOU ONG</Text>
           </TouchableOpacity>
         </View>
-
+          </View>
       </Modal>
     </SafeAreaView>
   );
@@ -349,7 +347,7 @@ const style = StyleSheet.create({
   buttonTextModal: {
     fontSize: 18
   },
-  modalContainer: {
+  modalContent: {
     width: '100%',
     height: '50%',
     backgroundColor: '#FFF',
@@ -383,5 +381,12 @@ const style = StyleSheet.create({
     height: 45,
     margin: 5,
     justifyContent: 'center'
-  }
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(34, 34, 34, 0.4)'
+  },
+  modal: {
+    flex: 1,
+  },
 })

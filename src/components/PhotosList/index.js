@@ -5,12 +5,13 @@ import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/n
 import firestore from '@react-native-firebase/firestore';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
-import { Image, Linking, Modal, SafeAreaView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native';
+import { Image, Linking, Modal, SafeAreaView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 export default function PhotosList({ data, userId }) {
   const navigation = useNavigation();
   const [likePost, setLikePost] = useState(data?.likes);
   const [open, setOpen] = useState(false);
   const [URL, setURL] = useState('');
+  const [imageFullOpen, setImageFullOpen] = useState(false);
   const [likeActive, setLikeActive] = useState(true);
   const isActive = useIsFocused();
   async function handleLikePost(id, likes) {
@@ -68,8 +69,17 @@ export default function PhotosList({ data, userId }) {
 
   useEffect(() => {
     async function loadAvatar() {
-      setURL(data.site);
       const docId = `${userId}_${data.id}`;
+      try {
+        const uid = userId;
+        const response = await firestore().collection('ongs').doc(uid).get();
+        let urlResponse = {
+          url: response.data().site,
+        }
+        setURL(urlResponse.url)
+      } catch (error) {
+        
+      }
       const doc = await firestore().collection('likes')
         .doc(docId).get();
 
@@ -123,51 +133,69 @@ export default function PhotosList({ data, userId }) {
           </Text>
         </View>
         <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+          <TouchableOpacity onPress={()=>{setImageFullOpen(true)}}>
           <Image
             source={{ uri: data.photo }}
             style={style.photo}
           />
+          </TouchableOpacity>
+          
         </View>
       </View>
-      <Modal visible={open} animationType="slide" transparent={true}>
+      <Modal visible={open} animationType="fade" transparent={true}>
         <View style={style.modalContainer}>
-          <TouchableOpacity
-            style={style.buttonBack}
-            onPress={() => setOpen(false)}>
-            <Feather
-              name="arrow-left"
-              size={22}
-              color='#000'
-            />
-            <Text style={{ color: '#000' }}>Voltar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
-            onPress={() => {
-              setOpen(false)
-              navigation.navigate("PostsOng", { title: data.autor, userId: data.userId })
-            }}>
-            <Text style={[{ color: "#fff" }, style.buttonTextModal]}>POSTS</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[{ backgroundColor: "#F64B57" }, style.buttonModal]}
-            onPress={() => {
-              setOpen(false)
-              Linking.openURL(`http:${URL}`)
-            }
-            }>
-            <Text style={[{ color: "#fff" }, style.buttonTextModal]}>SITE</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[{ backgroundColor: "#51C880" }, style.buttonModal]}
-            onPress={() => {
-              setOpen(false)
-              navigation.navigate('Donate', { title: data.autor, userId: data.userId })
-            }}>
-            <Text style={[{ color: "#fff" }, style.buttonTextModal]}>DOAR</Text>
-          </TouchableOpacity>
+          <TouchableWithoutFeedback onPress={() => setOpen(false)}>
+            <View style={style.modal}></View>
+          </TouchableWithoutFeedback>
+          <View style={style.modalContent}>
+            <TouchableOpacity
+              style={style.buttonBack}
+              onPress={() => setOpen(false)}>
+              <Feather
+                name="arrow-left"
+                size={22}
+                color='#000'
+              />
+              <Text style={{ color: '#000' }}>Voltar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
+              onPress={() => {
+                setOpen(false)
+                navigation.navigate("PostsOng", { title: data.autor, userId: data.userId })
+              }}>
+              <Text style={[{ color: "#fff" }, style.buttonTextModal]}>POSTS</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[{ backgroundColor: "#F64B57" }, style.buttonModal]}
+              onPress={() => {
+                setOpen(false)
+                Linking.openURL(`http:${URL}`)
+              }
+              }>
+              <Text style={[{ color: "#fff" }, style.buttonTextModal]}>SITE</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[{ backgroundColor: "#51C880" }, style.buttonModal]}
+              onPress={() => {
+                setOpen(false)
+                navigation.navigate('Donate', { title: data.autor, userId: data.userId })
+              }}>
+              <Text style={[{ color: "#fff" }, style.buttonTextModal]}>DOAR</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
+      </Modal>
+      <Modal animationType="fade" transparent={true} visible={imageFullOpen}>
+      <View style={style.modalContainer}>
+          <TouchableWithoutFeedback onPress={() => setImageFullOpen(false)}>
+            <View style={style.modal}></View>
+          </TouchableWithoutFeedback>
+          <Image
+            source={{ uri: data.photo }}
+            style={style.photoFull}
+          />
+          </View>
       </Modal>
     </SafeAreaView>
   )
@@ -234,7 +262,7 @@ const style = StyleSheet.create({
   buttonTextModal: {
     fontSize: 18
   },
-  modalContainer: {
+  modalContent: {
     width: '100%',
     height: '50%',
     backgroundColor: '#FFF',
@@ -257,5 +285,22 @@ const style = StyleSheet.create({
     height: 125,
     borderRadius: 5,
     marginLeft: 5
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(34, 34, 34, 0.4)'
+  },
+  modal: {
+    flex: 1,
+  },
+  photoFull:{
+    width: 350,
+    height: 350,
+    borderRadius: 5,
+    position: 'absolute',
+    top: '50%', 
+    left: '50%', 
+    marginLeft: -175, 
+    marginTop: -175,
   }
 })

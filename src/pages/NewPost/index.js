@@ -7,7 +7,8 @@ import Feather from 'react-native-vector-icons/Feather';
 import { AuthContext } from '../../contexts/auth';
 import {
   ActivityIndicator, Modal, SafeAreaView, Image,
-  StyleSheet, Text, TextInput, TouchableOpacity, View
+  StyleSheet, Text, TextInput, TouchableOpacity, View,
+  TouchableWithoutFeedback
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 export default function NewPost() {
@@ -160,13 +161,9 @@ export default function NewPost() {
         userId: user?.uid,
         likes: 0,
         avatarUrl: avatarUrl,
-        location: ongData.location,
-        site: ongData.site
       })
       .then(() => {
         setPost('');
-        console.log(ongData.location);
-        console.log(ongData.site);
       })
       .catch((error) => {
         console.log("Erro ao criar o post", error);
@@ -203,16 +200,16 @@ export default function NewPost() {
             <Text style={style.uploadText}>+</Text>
           </TouchableOpacity>
         )}
-         <TextInput
-        placeholder="O que está acontecendo?"
-        value={post}
-        onChangeText={(text) => setPost(text)}
-        autoCorrect={false}
-        multiline={true}
-        placeholderTextColor="#DDD"
-        maxLength={300}
-        style={[style.input, {marginTop: 5}]}
-      />
+        <TextInput
+          placeholder="O que está acontecendo?"
+          value={post}
+          onChangeText={(text) => setPost(text)}
+          autoCorrect={false}
+          multiline={true}
+          placeholderTextColor="#DDD"
+          maxLength={300}
+          style={[style.input, { marginTop: 5 }]}
+        />
       </SafeAreaView>
     )
   }
@@ -230,30 +227,34 @@ export default function NewPost() {
         maxLength={300}
         style={style.input}
       />
-      <Modal visible={open} animationType="slide" transparent={true}>
+      <Modal visible={open} animationType="fade" transparent={true}>
         <View style={style.modalContainer}>
-          <TouchableOpacity
-            style={style.buttonBack}
-            onPress={() => navigation.goBack()}>
-            <Feather
-              name="arrow-left"
-              size={22}
-              color='#000'
-            />
-            <Text style={{ color: '#000' }}>Voltar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
-            onPress={textType}>
-            <Text style={[{ color: "#fff" }, style.buttonTextModal]}>POST DE TEXTO</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
-            onPress={photoType}>
-            <Text style={[{ color: "#fff" }, style.buttonTextModal]}>POST COM FOTO</Text>
-          </TouchableOpacity>
+          <TouchableWithoutFeedback onPress={() => setOpen(false)}>
+            <View style={style.modal}></View>
+          </TouchableWithoutFeedback>
+          <View style={style.modalContent}>
+            <TouchableOpacity
+              style={style.buttonBack}
+              onPress={() => setOpen(false)}>
+              <Feather
+                name="x"
+                size={22}
+                color='#000'
+              />
+              <Text style={{ color: '#000' }}>Fechar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
+              onPress={textType}>
+              <Text style={[{ color: "#fff" }, style.buttonTextModal]}>POST DE TEXTO</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
+              onPress={photoType}>
+              <Text style={[{ color: "#fff" }, style.buttonTextModal]}>POST COM FOTO</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
       </Modal>
     </SafeAreaView>
   )
@@ -289,7 +290,7 @@ const style = StyleSheet.create({
   buttonTextModal: {
     fontSize: 18
   },
-  modalContainer: {
+  modalContent: {
     width: '100%',
     height: '50%',
     backgroundColor: '#FFF',
@@ -328,5 +329,12 @@ const style = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(34, 34, 34, 0.4)'
+  },
+  modal: {
+    flex: 1,
   },
 })

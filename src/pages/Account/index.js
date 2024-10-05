@@ -1,7 +1,7 @@
 import {
   ActivityIndicator,
   Alert, Image, KeyboardAvoidingView, Modal, SafeAreaView, StyleSheet,
-  Text, TextInput, TouchableOpacity, View
+  Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View
 } from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useContext, useEffect, useState } from 'react';
@@ -19,11 +19,10 @@ export default function Account() {
   const [name, setName] = useState(user?.name);
   const [url, setUrl] = useState(null);
   const [open, setOpen] = useState(false);
-  const [rankColor, setRankColor] = useState('#696969');
+  const [about, setAbout] = useState('');
+  const [site, setSite] = useState('');
   const [loading, setLoading] = useState(false);
-  const [rank, setRank] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
-  const [progress, setProgress] = useState(0);
   function openEdit() {
     setOpen(true)
   }
@@ -59,7 +58,9 @@ export default function Account() {
       await firestore().collection('ongs')
         .doc(user?.uid)
         .update({
-          name: name
+          name: name,
+          about: about,
+          site: site
         })
     }
     const postDocs = await firestore().collection('posts')
@@ -69,19 +70,44 @@ export default function Account() {
         .update({
           autor: name
         })
+
     })
+    const postImageDocs = await firestore().collection('postsPhotos')
+      .where('userId', '==', user?.uid).get();
+    postImageDocs.forEach(async doc => {
+      await firestore().collection('postsPhotos').doc(doc.id)
+        .update({
+          autor: name
+        })
 
-
+    })
+    if (user.typeUser === 'Ong') {
+      let data = {
+        uid: user.uid,
+        name: name,
+        email: user.email,
+        about: about,
+        site: site,
+        typeUser: 'Ong'
+      }
+      setLoading(false)
+      setUser(data);
+      storageUser(data);
+      setOpen(false);
+      return;
+    }
     let data = {
       uid: user.uid,
       name: name,
       email: user.email,
+      about: about,
+      site: site,
+      typeUser: 'Donor'
     }
     setLoading(false)
     setUser(data);
     storageUser(data);
     setOpen(false);
-
   }
 
 
@@ -159,15 +185,28 @@ export default function Account() {
             await firestore().collection('posts').doc(doc.id).update({
               avatarUrl: image
             })
+            .catch((error) => {
+              console.log("ERROR AO ATUALIZAR FOTO DOS POSTS ", error)
+            })
           })
+            
+          const postPhotosDocs = await firestore().collection('postsPhotos')
+            .where('userId', '==', user.uid).get();
 
+            postPhotosDocs.forEach(async doc => {
+            await firestore().collection('postsPhotos').doc(doc.id).update({
+              avatarUrl: image
+            })
+            .catch((error) => {
+              console.log("ERROR AO ATUALIZAR FOTO DOS POSTS ", error)
+            })
+          })
         })
-        .catch((error) => {
-          console.log("ERROR AO ATUALIZAR FOTO DOS POSTS ", error)
-        })
+
     }
   }
   useEffect(() => {
+
     async function loadAvatar() {
       setLoadingData(true)
       try {
@@ -227,37 +266,59 @@ export default function Account() {
               <Text style={[{ color: "#FFF" }, style.buttonText]}>Sair</Text>
             </TouchableOpacity>
 
-            <Modal visible={open} animationType="slide" transparent={true}>
-              <KeyboardAvoidingView
-                style={style.modalContainer}
-                behavior={Platform.OS === 'android' ? '' : 'padding'}>
-                <TouchableOpacity
-                  style={style.buttonBack}
-                  onPress={() => setOpen(false)}>
-                  <Feather
-                    name="arrow-left"
-                    size={22}
-                    color="#000"
+            <Modal visible={open} animationType="fade" transparent={true}>
+              <View style={style.modalContainer}>
+                <TouchableWithoutFeedback onPress={() => setOpen(false)}>
+                  <View style={style.modal}></View>
+                </TouchableWithoutFeedback>
+                <KeyboardAvoidingView
+                  style={style.modalContent}
+                  behavior={Platform.OS === 'android' ? '' : 'padding'}>
+                  <TouchableOpacity
+                    style={style.buttonBack}
+                    onPress={() => setOpen(false)}>
+                    <Feather
+                      name="arrow-left"
+                      size={22}
+                      color="#000"
+                    />
+                    <Text style={{ color: '#000' }}>Voltar</Text>
+                  </TouchableOpacity>
+
+                  <TextInput
+                    placeholder={user?.name}
+                    value={name}
+                    onChangeText={(text) => setName(text)}
+                    style={style.input}
+                    placeholderTextColor='#000'
                   />
-                  <Text style={{ color: '#000' }}>Voltar</Text>
-                </TouchableOpacity>
-
-                <TextInput
-                  placeholder={user?.name}
-                  value={name}
-                  onChangeText={(text) => setName(text)}
-                  style={style.input}
-                  placeholderTextColor='#000'
-                />
-
-                <TouchableOpacity style={[{ backgroundColor: "#428cfd" }, style.button]} onPress={updateProfile}>
-                  {loading ? (
-                    <ActivityIndicator color='#FFF' size={20} />
-                  ) : (
-                    <Text style={[{ color: "#fff" }, style.buttonText]}>Salvar</Text>
+                  {user?.typeUser === 'Ong' && (
+                    <View style={{ width: '100%', alignItems: 'center' }}>
+                      <TextInput
+                        placeholder={user?.about || 'Digite sobre a ONG'}
+                        value={about}
+                        onChangeText={(text) => setAbout(text)}
+                        style={style.input}
+                        placeholderTextColor='#000'
+                      />
+                      <TextInput
+                        placeholder={user?.site || 'Digite o site da ONG'}
+                        value={site}
+                        onChangeText={(text) => setSite(text)}
+                        style={style.input}
+                        placeholderTextColor='#000'
+                      />
+                    </View>
                   )}
-                </TouchableOpacity>
-              </KeyboardAvoidingView>
+                  <TouchableOpacity style={[{ backgroundColor: "#428cfd" }, style.button]} onPress={updateProfile}>
+                    {loading ? (
+                      <ActivityIndicator color='#FFF' size={20} />
+                    ) : (
+                      <Text style={[{ color: "#fff" }, style.buttonText]}>Salvar</Text>
+                    )}
+                  </TouchableOpacity>
+                </KeyboardAvoidingView>
+              </View>
             </Modal>
 
           </View>
@@ -279,7 +340,7 @@ const style = StyleSheet.create({
     marginLeft: 20,
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFF'
+    color: '#FFF',
   },
   email: {
     color: '#FFF',
@@ -322,7 +383,7 @@ const style = StyleSheet.create({
     height: 160,
     borderRadius: 80,
   },
-  modalContainer: {
+  modalContent: {
     width: '100%',
     height: '50%',
     backgroundColor: '#FFF',
@@ -347,6 +408,14 @@ const style = StyleSheet.create({
     padding: 10,
     fontSize: 18,
     color: '#121212',
-    textAlign: 'center'
+    textAlign: 'center',
+    marginBottom: 10
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(34, 34, 34, 0.4)'
+  },
+  modal: {
+    flex: 1,
   },
 })

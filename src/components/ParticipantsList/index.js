@@ -1,9 +1,8 @@
-import { Image, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Image, Linking, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ParticipantsList({ DATA }) {
     return (
-        <View style={style.container}>
+        <ScrollView style={style.container}>
             <View style={style.header}>
                 <Image
                     style={style.avatar}
@@ -13,10 +12,11 @@ export default function ParticipantsList({ DATA }) {
             </View>
 
             <Text style={style.content}>{DATA.work}</Text>
-                {DATA?.insta && (
+            <View>
+            {DATA?.insta && (
                     <TouchableOpacity
                     style={[style.button, {backgroundColor: '#E1306C'}]}
-                        onPress={() => Linking.openURL(`https://instagram.com/${DATA.insta}`)}
+                        onPress={() => Linking.openURL(`https://instagram.com/${DATA?.insta}`)}
                     >
                         <Text style={{fontSize: 25, color: '#fff'}}>Instagram</Text>
                     </TouchableOpacity>
@@ -24,12 +24,13 @@ export default function ParticipantsList({ DATA }) {
                 {DATA?.github && (
                     <TouchableOpacity
                     style={[style.button, {backgroundColor: '#24292E'}]}
-                        onPress={() => Linking.openURL(`https://github.com/${DATA.github}`)}
+                        onPress={() => Linking.openURL(`https://github.com/${DATA?.github}`)}
                     >
                         <Text style={{fontSize: 25, color: '#fff'}}>GitHub</Text>
                     </TouchableOpacity>
                 )}
-        </View>
+            </View>   
+        </ScrollView>
     );
 }
 
@@ -41,7 +42,7 @@ const style = StyleSheet.create({
         borderRadius: 8,
         elevation: 3,
         padding: 11,
-        height: 200
+        height: '90%'
     },
     header: {
         width: '100%',

@@ -1,7 +1,9 @@
 import {
   SafeAreaView, View, StyleSheet, Text, TouchableOpacity, TextInput, ScrollView,
   ActivityIndicator,
-  Alert
+  Alert,
+  KeyboardAvoidingView,
+  Keyboard
 } from 'react-native';
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { useIsFocused, useNavigation } from '@react-navigation/native';
@@ -16,7 +18,7 @@ export default function Pagaments() {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [loading, setLoading] = useState(false);
-  const [type, setType] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const navigation = useNavigation();
   const { user } = useContext(AuthContext);
   useEffect(() => {
@@ -32,7 +34,6 @@ export default function Pagaments() {
           setName(userData.name);
           setValue(userData.balance);
           setLocation(userData.city);
-          setType(false);
         }
       } catch (error) {
         console.error("Usuario sem internet ctz: ", error);
@@ -50,7 +51,6 @@ export default function Pagaments() {
           setName(ongData.name);
           setValue(ongData.balance);
           setLocation(ongData.city);
-          setType(true);
         }
       } catch (error) {
         console.log("Usuario tá de hack: ", error);
@@ -58,30 +58,41 @@ export default function Pagaments() {
     }
 
     getData();
+    const keyboardShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+
+    const keyboardHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
   }, [isActive])
   async function handleAdd(number) {
-    if(Number(number) === NaN){
+    if (Number(number) === NaN) {
       setValueAdd('');
       return;
     }
     const newValue = Number(value) + Number(number);
-    if(newValue === NaN){
-      if(value === NaN){
-        await updateData(0)
-        setValue(0)
-      }
+    if (newValue < value || newValue < 0) {
+      Alert.alert('Atenção', 'Ta tentando diminuir seu saldo?')
+    }
+    if (isNaN(newValue)) {
+      Alert.alert('Alerta', 'Valor não valido')
       return;
     }
-    if(newValue > 3000000){
+    if (newValue > 3000000) {
       Alert.alert('Atenção', 'valor acima do limite');
       return;
-    } 
+    }
     setValue(newValue)
     await updateData(newValue)
   }
   async function updateData(newValue) {
     try {
-      if (type) {
+      if (user.typeUser === 'Ong') {
         await firestore().collection('ongs').doc(user.uid).update({
           balance: newValue
         });
@@ -114,93 +125,100 @@ export default function Pagaments() {
           </View>
           {user.typeUser === 'Donor' && (
             <View>
-              <Text style={style.textAdd}>Adicionar Saldo:</Text>
-              <View style={style.containerAdd}>
-                <TextInput
-                  style={style.input}
-                  textContentType='number'
-                  keyboardType='number-pad'
-                  placeholder="Adicionar saldo"
-                  value={valueAdd}
-                  onChangeText={(text) => setValueAdd(text)}
-                  placeholderTextColor="#000"
-                />
-                <TouchableOpacity
-                  onPress={() => handleAdd(valueAdd)}
-                >
-                  <Ionicons name="send-sharp" size={40} color="black" />
-                </TouchableOpacity>
-              </View>
-              <Text style={style.textAdd}>Adicionar Saldo Rápido:</Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                <TouchableOpacity
-                  style={style.containerButtonAdd}
-                  onPress={() => handleAdd(1)}
-                >
-                  <Text style={style.textButtonAdd}>R$1</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={style.containerButtonAdd}
-                  onPress={() => handleAdd(2)}
-                >
-                  <Text style={style.textButtonAdd}>R$2</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={style.containerButtonAdd}
-                  onPress={() => handleAdd(5)}
-                >
-                  <Text style={style.textButtonAdd}>R$5</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={style.containerButtonAdd}
-                  onPress={() => handleAdd(10)}
-                >
-                  <Text style={style.textButtonAdd}>R$10</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={style.containerButtonAdd}
-                  onPress={() => handleAdd(20)}
-                >
-                  <Text style={style.textButtonAdd}>R$20</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                <TouchableOpacity
-                  style={style.containerButtonAdd}
-                  onPress={() => handleAdd(50)}
-                >
-                  <Text style={style.textButtonAdd}>R$50</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={style.containerButtonAdd}
-                  onPress={() => handleAdd(100)}
-                >
-                  <Text style={style.textButtonAdd}>R$100</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={style.containerButtonAdd}
-                  onPress={() => handleAdd(200)}
-                >
-                  <Text style={style.textButtonAdd}>R$200</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={style.containerButtonAdd}
-                  onPress={() => handleAdd(500)}
-                >
-                  <Text style={style.textButtonAdd}>R$500</Text>
-                </TouchableOpacity>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              >
+                <Text style={style.textAdd}>Adicionar Saldo:</Text>
+                <View style={style.containerAdd}>
+                  <TextInput
+                    style={style.input}
+                    textContentType='number'
+                    keyboardType='numeric'
+                    placeholder="Adicionar saldo"
+                    value={valueAdd}
+                    onChangeText={(text) => setValueAdd(text)}
+                    placeholderTextColor="#000"
+                  />
+                  <TouchableOpacity
+                    onPress={() => handleAdd(valueAdd)}
+                  >
+                    <Ionicons name="send-sharp" size={40} color="black" />
+                  </TouchableOpacity>
+                </View>
+                <Text style={style.textAdd}>Adicionar Saldo Rápido:</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                  <TouchableOpacity
+                    style={style.containerButtonAdd}
+                    onPress={() => handleAdd(1)}
+                  >
+                    <Text style={style.textButtonAdd}>R$1</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={style.containerButtonAdd}
+                    onPress={() => handleAdd(2)}
+                  >
+                    <Text style={style.textButtonAdd}>R$2</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={style.containerButtonAdd}
+                    onPress={() => handleAdd(5)}
+                  >
+                    <Text style={style.textButtonAdd}>R$5</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={style.containerButtonAdd}
+                    onPress={() => handleAdd(10)}
+                  >
+                    <Text style={style.textButtonAdd}>R$10</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={style.containerButtonAdd}
+                    onPress={() => handleAdd(20)}
+                  >
+                    <Text style={style.textButtonAdd}>R$20</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                  <TouchableOpacity
+                    style={style.containerButtonAdd}
+                    onPress={() => handleAdd(50)}
+                  >
+                    <Text style={style.textButtonAdd}>R$50</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={style.containerButtonAdd}
+                    onPress={() => handleAdd(100)}
+                  >
+                    <Text style={style.textButtonAdd}>R$100</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={style.containerButtonAdd}
+                    onPress={() => handleAdd(200)}
+                  >
+                    <Text style={style.textButtonAdd}>R$200</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={style.containerButtonAdd}
+                    onPress={() => handleAdd(500)}
+                  >
+                    <Text style={style.textButtonAdd}>R$500</Text>
+                  </TouchableOpacity>
 
-              </View>
+                </View>
+              </KeyboardAvoidingView>
+            </View>
+          )}
+          
+          {!keyboardVisible && (
+            <View style={{ position: 'absolute', bottom: 5, alignItems: 'center', marginHorizontal: 5 }}>
+              <Text style={style.textAlert}>
+                Obs: O sistema de pagamento do aplicativo é conceitual,
+                por conta das normas da Play Store/Apple Store e por
+                questões de segurança, pois é só a ideia de como seria.
+              </Text>
             </View>
           )}
 
-          <View style={{ position: 'absolute', bottom: 5, alignItems: 'center', marginHorizontal: 5 }}>
-            <Text style={style.textAlert}>
-              Obs: O sistema de pagamento do aplicativo é conceitual,
-              por conta das normas da Play Store/Apple Store e por
-              questões de segurança, pois é só a ideia de como seria.
-            </Text>
-          </View>
         </SafeAreaView>
       }
     </SafeAreaView>

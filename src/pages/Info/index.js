@@ -1,4 +1,4 @@
-import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal, Linking } from 'react-native';
+import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal, Linking, TouchableWithoutFeedback } from 'react-native';
 import Header from '../../components/Header';
 import ParticipantsList from '../../components/ParticipantsList';
 import Feather from 'react-native-vector-icons/Feather';
@@ -63,7 +63,7 @@ export default function Info() {
       photo: Avatar
     },
   ];
-  function openInfo(){
+  function openInfo() {
     setOpen(true)
   }
   return (
@@ -76,6 +76,7 @@ export default function Info() {
           renderItem={({ item }) => <ParticipantsList DATA={item} />}
           showsHorizontalScrollIndicator={false}
           horizontal={true}
+          style={{height: '40%'}}
         />
         <ScrollView showsVerticalScrollIndicator={false}>
           <Text style={style.title}>Detalhes Tecnicos:</Text>
@@ -105,46 +106,50 @@ export default function Info() {
           <Text style={style.textTec}>react-native-app-intro-slider</Text>
 
         </ScrollView>
-        <Modal visible={open} animationType="slide" transparent={true}>
-        <View style={style.modalContainer}>
-          <TouchableOpacity
-            style={style.buttonBack}
-            onPress={() => setOpen(false)}>
-            <Feather
-              name="arrow-left"
-              size={22}
-              color='#000'
-            />
-            <Text style={{ color: '#000' }}>Voltar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-          style={[{ backgroundColor: "#428cfd" }, style.buttonModal]} 
-          onPress={()=>{
-            setOpen(false)
-            navigation.navigate('Feedback')
-            }}>
-            <Text style={[{ color: "#fff" }, style.buttonTextModal]}>AVALIAR TRABALHO</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-          style={[{ backgroundColor: "#F64B57" }, style.buttonModal]} 
-          onPress={()=>{
-            setOpen(false)
-            Linking.openURL('https://sites.google.com/fortecpraiagrande.com.br/donationcity/in%C3%ADcio')
-            }
-          }>
-            <Text style={[{ color: "#fff" }, style.buttonTextModal]}>SITE</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-          style={[{ backgroundColor: "#51C880" }, style.buttonModal]} 
-          onPress={()=>{
-            setOpen(false)
-            
-            }}>
-            <Text style={[{ color: "#fff" }, style.buttonTextModal]}>TERMOS DE USO/PRIVACIDADE</Text>
-          </TouchableOpacity>
-        </View>
-
-      </Modal>
+        <Modal visible={open} animationType="fade" transparent={true}>
+          <View style={style.modalContainer}>
+            <TouchableWithoutFeedback onPress={()=>setOpen(false)}>
+              <View style={style.modal}></View>
+            </TouchableWithoutFeedback>
+            <View style={style.modalContent}>
+              <TouchableOpacity
+                style={style.buttonBack}
+                onPress={() => setOpen(false)}>
+                <Feather
+                  name="arrow-left"
+                  size={22}
+                  color='#000'
+                />
+                <Text style={{ color: '#000' }}>Voltar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
+                onPress={() => {
+                  setOpen(false)
+                  navigation.navigate('Feedback')
+                }}>
+                <Text style={[{ color: "#fff" }, style.buttonTextModal]}>AVALIAR TRABALHO</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[{ backgroundColor: "#F64B57" }, style.buttonModal]}
+                onPress={() => {
+                  setOpen(false)
+                  Linking.openURL('https://sites.google.com/fortecpraiagrande.com.br/donationcity/in%C3%ADcio')
+                }
+                }>
+                <Text style={[{ color: "#fff" }, style.buttonTextModal]}>SITE</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[{ backgroundColor: "#51C880" }, style.buttonModal]}
+                onPress={() => {
+                  setOpen(false)
+                  Linking.openURL('https://sites.google.com/fortecpraiagrande.com.br/donationcity/termos-de-uso-e-privacidade')
+                }}>
+                <Text style={[{ color: "#fff" }, style.buttonTextModal]}>TERMOS DE USO/PRIVACIDADE</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -196,7 +201,7 @@ const style = StyleSheet.create({
   buttonTextModal: {
     fontSize: 18
   },
-  modalContainer: {
+  modalContent: {
     width: '100%',
     height: '50%',
     backgroundColor: '#FFF',
@@ -213,5 +218,12 @@ const style = StyleSheet.create({
     left: 25,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(34, 34, 34, 0.4)'
+  },
+  modal: {
+    flex: 1,
   },
 })

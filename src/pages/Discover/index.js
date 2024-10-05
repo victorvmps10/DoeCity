@@ -14,7 +14,6 @@ export default function Home() {
   const { user } = useContext(AuthContext);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [loadingRefresh, setLoadingRefresh] = useState(false)
   const [lastItem, setLastItem] = useState('');
   const [emptyList, setEmptyList] = useState(false);
@@ -22,7 +21,7 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
-
+      console.log(posts)
       function fetchPosts() {
         firestore().collection('postsPhotos')
           .orderBy('created', 'desc')
