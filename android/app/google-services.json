@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "936295288455",
+    "project_id": "doecity-dc8ad",
+    "storage_bucket": "doecity-dc8ad.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:936295288455:android:20e8711660bb75f6adb222",
+        "android_client_info": {
+          "package_name": "com.v10.doecity"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgEcWkxTxozrlDSB16tzm6pDpOEzo-Elk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

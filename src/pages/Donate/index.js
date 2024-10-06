@@ -41,7 +41,7 @@ export default function Donate() {
                     const userData = userProfile.data();
                     setName(userData.name);
                     setValue(userData.balance);
-                    setLocation(userData.city);
+                    setLocation(userData.location);
                 }
             } catch (error) {
                 console.error("Usuario sem internet ctz: ", error);
@@ -57,7 +57,7 @@ export default function Donate() {
                 if (ongData) {
                     setName(ongData.name);
                     setValue(ongData.balance);
-                    setLocation(ongData.city);
+                    setLocation(ongData.location);
                 }
             } catch (error) {
                 console.log("Usuario tá de hack: ", error);
@@ -79,17 +79,18 @@ export default function Donate() {
         };
     }, [isActive])
     async function handleAdd(number) {
+        if (isNaN(Number(number))) {
+            setValueAdd('');
+            return;
+          }
         const newValue = value - number;
+        if(newValue > value){
+            Alert.alert('Atenção', 'Adicione valor valido!!!')
+            return;
+        }
         if (newValue < 0) {
             Alert.alert('Atenção', 'Saldo insuficiente');
             return;
-        }
-        if (newValue === NaN) {
-            if (value === NaN) {
-                await updateData(0)
-                setValue(0)
-                return;
-            }
         }
         try {
             let valueOng = Math.abs(Number(number))

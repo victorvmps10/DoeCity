@@ -80,7 +80,7 @@ export default function AuthProvider({ children }) {
                             createdAt: new Date(),
                             site: `https://www.google.com/search?q=${name}`,
                             location: location,
-                            about: ''
+                            about: '',
                         })
                         .then(() => {
                             let data = {

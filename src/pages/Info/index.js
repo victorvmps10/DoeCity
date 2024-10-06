@@ -147,6 +147,14 @@ export default function Info() {
                 }}>
                 <Text style={[{ color: "#fff" }, style.buttonTextModal]}>TERMOS DE USO/PRIVACIDADE</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={[{ backgroundColor: "#2E2E2E" }, style.buttonModal]}
+                onPress={() => {
+                  setOpen(false)
+                  Linking.openURL('mailto:donationcity7@gmail.com')
+                }}>
+                <Text style={[{ color: "#fff" }, style.buttonTextModal]}>SUPORTE</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
@@ -203,7 +211,7 @@ const style = StyleSheet.create({
   },
   modalContent: {
     width: '100%',
-    height: '50%',
+    height: '60%',
     backgroundColor: '#FFF',
     position: 'absolute',
     bottom: 0,

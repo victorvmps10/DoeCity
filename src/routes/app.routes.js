@@ -12,6 +12,8 @@ import PostsOng from '../pages/PostsOng';
 import Search from '../pages/Search';
 import Donate from '../pages/Donate';
 import Feedback from '../pages/Feedback';
+import EditPost from '../pages/EditPost';
+import Messages from '../pages/Messages';
 
 export default function AppRoutes() {
   const AppTabs = createBottomTabNavigator();
@@ -74,6 +76,16 @@ function StackHome() {
       <StackHome.Screen
         name='NewPost'
         component={NewPost}
+        options={{
+          headerTintColor: '#fff',
+          headerStyle: {
+            backgroundColor: '#2E2E2E',
+          }
+        }}
+      />
+      <StackHome.Screen
+        name='EditPost'
+        component={EditPost}
         options={{
           headerTintColor: '#fff',
           headerStyle: {

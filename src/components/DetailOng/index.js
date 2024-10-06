@@ -1,6 +1,9 @@
 import {
   SafeAreaView, View, StyleSheet, Text,
-  Image
+  Image,
+  Modal,
+  TouchableWithoutFeedback,
+  TouchableOpacity
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
@@ -15,6 +18,7 @@ export default function DetailOng(data) {
   const [loading, setLoading] = useState(false);
   const [url, setUrl] = useState();
   const [location, setLocation] = useState('');
+  const [imageFullOpen, setImageFullOpen] = useState(false);
   useEffect(() => {
     setLoading(true);
     async function getData() {
@@ -30,8 +34,8 @@ export default function DetailOng(data) {
       }
       try {
         let response = await storage().ref('ongs').child(data?.userId).getDownloadURL();
-          setUrl(response); 
-          setLoading(false);
+        setUrl(response);
+        setLoading(false);
       } catch (error) {
         console.log("Ctz que não tem foto");
         setLoading(false);
@@ -46,28 +50,43 @@ export default function DetailOng(data) {
           <ActivityIndicator size={50} color="#00B2FF" />
         </View>
       ) : (
-          <View style={{ alignItems: 'center', justifyContent: 'center', }}>
-            {url ?
+        <View style={{ alignItems: 'center', justifyContent: 'center', }}>
+          {url ?
+            <TouchableOpacity
+              onPress={() => setImageFullOpen(true)}
+            >
               <Image
                 source={{ uri: url }}
                 style={style.avatar}
               />
-              :
-              <View style={style.nullAvatar}><Text>.</Text></View>
-            }
-            <Text style={style.text}><Text style={{fontWeight: 'bold'}}>Nome da Ong:</Text> {name}</Text>
-            <Text style={style.text}><Text style={{fontWeight: 'bold'}}>Localidade:</Text>{location}</Text>
-            <Text style={style.text}>
-            <Text style={{fontWeight: 'bold'}}>Saldo da Ong:</Text> R${value}
-            </Text>
-            <Text style={[style.text, { fontWeight: 'bold' }]}>
-              Sobre nós:
-            </Text>
-            <Text style={style.text}>
-              {about}
-            </Text>
-          </View>
+            </TouchableOpacity>
+            :
+            <View style={style.nullAvatar}><Text>.</Text></View>
+          }
+          <Text style={style.text}><Text style={{ fontWeight: 'bold' }}>Nome da Ong:</Text> {name}</Text>
+          <Text style={style.text}><Text style={{ fontWeight: 'bold' }}>Localidade:</Text>{location}</Text>
+          <Text style={style.text}>
+            <Text style={{ fontWeight: 'bold' }}>Saldo da Ong:</Text> R${value}
+          </Text>
+          <Text style={[style.text, { fontWeight: 'bold' }]}>
+            Sobre nós:
+          </Text>
+          <Text style={style.text}>
+            {about}
+          </Text>
+        </View>
       )}
+      <Modal animationType="fade" transparent={true} visible={imageFullOpen}>
+        <View style={style.modalContainer}>
+          <TouchableWithoutFeedback onPress={() => setImageFullOpen(false)}>
+            <View style={style.modal}></View>
+          </TouchableWithoutFeedback>
+          <Image
+            source={{ uri: url }}
+            style={style.photoFull}
+          />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -96,5 +115,22 @@ const style = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 8,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(34, 34, 34, 0.4)'
+  },
+  modal: {
+    flex: 1,
+  },
+  photoFull: {
+    width: 350,
+    height: 350,
+    borderRadius: 180,
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginLeft: -175,
+    marginTop: -175,
   }
 })

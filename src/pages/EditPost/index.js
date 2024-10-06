@@ -1,6 +1,6 @@
 import React, { useState, useLayoutEffect, useContext } from 'react';
 
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import Feather from 'react-native-vector-icons/Feather';
@@ -11,30 +11,23 @@ import {
   TouchableWithoutFeedback
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
-export default function NewPost() {
+export default function EditPost() {
+  const route = useRoute();
   const navigation = useNavigation();
   const { user } = useContext(AuthContext);
-  const [open, setOpen] = useState(false);
   const [post, setPost] = useState("");
+  const [ongData, setOngData] = useState({});
   const [type, setType] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [url, setUrl] = useState(null);
-  function photoType() {
-    setType(true);
-    setOpen(false)
-  }
-  function textType() {
-    setType(false);
-    setOpen(false)
-  }
-  useLayoutEffect(() => {
 
+  useLayoutEffect(() => {
     const options = navigation.setOptions({
       headerRight: () => (
         <TouchableOpacity
           style={style.button}
           onPress={() => handlePost()}>
-          <Text style={{ color: '#fff' }}>Compartilhar</Text>
+          <Text style={{ color: '#fff' }}>Editar</Text>
         </TouchableOpacity>
       )
     })
@@ -42,9 +35,24 @@ export default function NewPost() {
   }, [navigation, post, type, url])
 
   useLayoutEffect(() => {
+    setType(route.params?.type)
     console.log(user)
-    setOpen(true)
-
+    setLoading(true)
+    setPost(route.params?.data.content)
+    async function getData() {
+      try {
+        const response = await firestore().collection('postsPhotos').doc(route.params?.data.id).get();
+        let urlResponse = {
+          url: response.data().photo,
+        }
+        setUrl(urlResponse.url)
+        setLoading(false)
+      } catch (error) {
+        
+      }
+      setLoading(false)
+    }
+      getData()
   }, [navigation])
   const uploadFile = () => {
     const options = {
@@ -80,20 +88,9 @@ export default function NewPost() {
         return;
       }
 
-      const generateRandomCode = (length) => {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-          result += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-        return result;
-      };
-
-      const code = generateRandomCode(15);
-
       const uploadFileFirebase = async () => {
         try {
-          const storageRef = storage().ref('postsPhotos').child(`${user?.uid}_${code}`);
+          const storageRef = storage().ref('postsPhotos').child(route.params?.data.photo);
           let response = await storageRef.putFile(url);
           const downloadURL = await storageRef.getDownloadURL();
           return downloadURL;
@@ -104,16 +101,14 @@ export default function NewPost() {
 
       try {
         const photoUrl = await uploadFileFirebase();
-       await firestore().collection('postsPhotos')
-          .add({
-            created: new Date(),
+        console.log(route.params?.data.id)
+        await firestore().collection('postsPhotos').doc(route.params?.data.id)
+          .update({
             autor: user?.name,
             userId: user?.uid,
-            likes: 0,
             avatarUrl: avatarUrl,
             photo: photoUrl,
             content: post,
-            codeStorage: `${user?.uid}_${code}`
           })
           .then(() => {
             setPost('');
@@ -121,7 +116,7 @@ export default function NewPost() {
           .catch((error) => {
             console.log("Erro ao criar o post com foto", error);
           });
-        setLoading(false);
+        setLoading(false)
         navigation.goBack();
       } catch (error) {
         console.error("Error handling the post with photo", error);
@@ -136,22 +131,20 @@ export default function NewPost() {
       return;
     }
 
-    await firestore().collection('posts')
-      .add({
-        created: new Date(),
+    await firestore().collection('posts').doc(route.params?.data.id)
+      .update({
         content: post,
         autor: user?.name,
         userId: user?.uid,
-        likes: 0,
         avatarUrl: avatarUrl,
       })
       .then(() => {
         setPost('');
       })
       .catch((error) => {
-        console.log("Erro ao criar o post com foto", error);
+        console.log("Erro ao criar o post", error);
       });
-    setLoading(false);
+    setLoading(false)
     navigation.goBack();
   }
 
@@ -184,7 +177,7 @@ export default function NewPost() {
           </TouchableOpacity>
         )}
         <TextInput
-          placeholder="O que está acontecendo?"
+          placeholder={route.params?.data.content}
           value={post}
           onChangeText={(text) => setPost(text)}
           autoCorrect={false}
@@ -210,35 +203,6 @@ export default function NewPost() {
         maxLength={50}
         style={style.input}
       />
-      <Modal visible={open} animationType="fade" transparent={true}>
-        <View style={style.modalContainer}>
-          <TouchableWithoutFeedback onPress={() => setOpen(false)}>
-            <View style={style.modal}></View>
-          </TouchableWithoutFeedback>
-          <View style={style.modalContent}>
-            <TouchableOpacity
-              style={style.buttonBack}
-              onPress={() => setOpen(false)}>
-              <Feather
-                name="x"
-                size={22}
-                color='#000'
-              />
-              <Text style={{ color: '#000' }}>Fechar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
-              onPress={textType}>
-              <Text style={[{ color: "#fff" }, style.buttonTextModal]}>POST DE TEXTO</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
-              onPress={photoType}>
-              <Text style={[{ color: "#fff" }, style.buttonTextModal]}>POST COM FOTO</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   )
 }
@@ -262,35 +226,6 @@ const style = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
-  buttonModal: {
-    marginTop: 16,
-    width: '80%',
-    height: 50,
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonTextModal: {
-    fontSize: 18
-  },
-  modalContent: {
-    width: '100%',
-    height: '50%',
-    backgroundColor: '#FFF',
-    position: 'absolute',
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10
-  },
-  buttonBack: {
-    position: 'absolute',
-    top: 15,
-    left: 25,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   uploadButton: {
     marginTop: '20%',
     backgroundColor: '#FFF',
@@ -312,12 +247,5 @@ const style = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 10,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(34, 34, 34, 0.4)'
-  },
-  modal: {
-    flex: 1,
   },
 })

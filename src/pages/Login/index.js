@@ -16,7 +16,7 @@ export default function Login() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState('Praia Grande - SP');
   const [ongType, setOngType] = useState(false);
   const [code, setCode] = useState('');
   const { signed, loading, loadingAuth, signIn, signUp, recoveryAccount, setDonor } = useContext(AuthContext);
@@ -24,7 +24,7 @@ export default function Login() {
   const [hidePass, setHidePass] = useState(true);
   const navigation = useNavigation();
   async function handleSingUp() {
-    if (name === '' || email === '' || password === '') {
+    if (name === '' || email === '' || password === '' || location === '') {
       Alert.alert('Atenção', 'Preencha os campos')
       return;
     }

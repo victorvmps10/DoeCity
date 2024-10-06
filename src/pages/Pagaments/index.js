@@ -33,7 +33,7 @@ export default function Pagaments() {
           const userData = userProfile.data();
           setName(userData.name);
           setValue(userData.balance);
-          setLocation(userData.city);
+          setLocation(userData.location);
         }
       } catch (error) {
         console.error("Usuario sem internet ctz: ", error);
@@ -50,7 +50,7 @@ export default function Pagaments() {
         if (ongData) {
           setName(ongData.name);
           setValue(ongData.balance);
-          setLocation(ongData.city);
+          setLocation(ongData.location);
         }
       } catch (error) {
         console.log("Usuario tá de hack: ", error);
@@ -71,17 +71,13 @@ export default function Pagaments() {
     };
   }, [isActive])
   async function handleAdd(number) {
-    if (Number(number) === NaN) {
+    if (isNaN(Number(number))) {
       setValueAdd('');
       return;
     }
     const newValue = Number(value) + Number(number);
     if (newValue < value || newValue < 0) {
       Alert.alert('Atenção', 'Ta tentando diminuir seu saldo?')
-    }
-    if (isNaN(newValue)) {
-      Alert.alert('Alerta', 'Valor não valido')
-      return;
     }
     if (newValue > 3000000) {
       Alert.alert('Atenção', 'valor acima do limite');

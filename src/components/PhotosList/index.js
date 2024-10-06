@@ -1,19 +1,55 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { formatDistance } from 'date-fns';
-import { ptBR } from 'date-fns/locale'
-import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native'
+import { ptBR } from 'date-fns/locale';
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import firestore from '@react-native-firebase/firestore';
+import Entypo from 'react-native-vector-icons/Entypo';
+import storage from '@react-native-firebase/storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
-import { Image, Linking, Modal, SafeAreaView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, Image, Linking, Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { AuthContext } from '../../contexts/auth';
 export default function PhotosList({ data, userId }) {
   const navigation = useNavigation();
+  const { user } = useContext(AuthContext);
   const [likePost, setLikePost] = useState(data?.likes);
   const [open, setOpen] = useState(false);
+  const [owner, setOwner] = useState(false);
   const [URL, setURL] = useState('');
   const [imageFullOpen, setImageFullOpen] = useState(false);
+  const [editPostOpen, setEditPostOpen] = useState(false);
   const [likeActive, setLikeActive] = useState(true);
   const isActive = useIsFocused();
+   function EditPost(){
+    if(data?.userId === user?.uid){
+      setEditPostOpen(true)
+    }
+  }
+  async function deletePost(){
+    Alert.alert('Atenção', 'Quer mesmo deletar o post?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Confirmar',
+          onPress: async () => await confirmDeletePost()
+        }
+      ]
+    )
+    
+  }
+  async function confirmDeletePost(){
+    const post = await firestore().collection('postsPhotos').doc(data?.id).get();
+    const storageRefPost = post?.data().codeStorage;
+    await firestore().collection('postsPhotos').doc(data?.id).delete()
+    .then(async ()=>{
+      await storage().ref('postsPhotos').child(storageRefPost).delete();
+      Alert.alert('Aviso', 'Seu post foi deletado, de um refresh na tela')
+      navigation.navigate('Account')
+    })
+  }
   async function handleLikePost(id, likes) {
 
     const docId = `${userId}_${id}`;
@@ -69,6 +105,9 @@ export default function PhotosList({ data, userId }) {
 
   useEffect(() => {
     async function loadAvatar() {
+      if(user?.uid === data.userId){
+        setOwner(true)
+      }
       const docId = `${userId}_${data.id}`;
       try {
         const uid = userId;
@@ -90,31 +129,49 @@ export default function PhotosList({ data, userId }) {
     loadAvatar();
     return () => loadAvatar();
   }, [isActive])
+
   return (
-    <SafeAreaView style={style.container}>
-      <TouchableOpacity
-        style={style.header}
-        onPress={() => setOpen(true)}>
-        {data.avatarUrl ? (
-          <Image
-            source={{ uri: data.avatarUrl }}
-            style={style.avatar}
+    <SafeAreaView style={style.container} >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <TouchableOpacity
+          style={style.header}
+          onPress={() => setOpen(true)}
+          onLongPress={() => EditPost()}
+        >
+          {data.avatarUrl ? (
+            <Image
+              source={{ uri: data.avatarUrl }}
+              style={style.avatar}
+            />
+          ) : (
+            <Image
+              source={require('../../assets/avatar.png')}
+              style={style.avatar}
+            />
+          )}
+          <Text numberOfLines={1} style={style.name}>
+            {data?.autor}
+          </Text>
+        </TouchableOpacity>
+        {owner && (
+          <TouchableOpacity 
+          onPress={()=> EditPost()}
+          style={{marginTop: 5}}
+          >
+          <Entypo
+            name='dots-three-horizontal'
+            size={20}
+            color="#121212"
           />
-        ) : (
-          <Image
-            source={require('../../assets/avatar.png')}
-            style={style.avatar}
-          />
+        </TouchableOpacity>
         )}
-        <Text numberOfLines={1} style={style.name}>
-          {data?.autor}
-        </Text>
-      </TouchableOpacity>
+      </View>
       <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <View style={style.actions}>
           <View style={style.content}>
             <Text style={{ color: '#121212', maxWidth: '65%' }} numberOfLines={4} >{data?.content}</Text>
           </View>
+          <View style={{flexDirection: 'row'}}>
           <TouchableOpacity
             onPress={() => handleLikePost(data.id, likePost)}
             style={style.likeButton}>
@@ -126,8 +183,8 @@ export default function PhotosList({ data, userId }) {
               size={20}
               color="#E52246"
             />
-          </TouchableOpacity>
-
+            </TouchableOpacity>
+          </View>
           <Text style={style.timePost}>
             {formatTimePost()}
           </Text>
@@ -139,9 +196,9 @@ export default function PhotosList({ data, userId }) {
             style={style.photo}
           />
           </TouchableOpacity>
-          
         </View>
       </View>
+
       <Modal visible={open} animationType="fade" transparent={true}>
         <View style={style.modalContainer}>
           <TouchableWithoutFeedback onPress={() => setOpen(false)}>
@@ -197,6 +254,42 @@ export default function PhotosList({ data, userId }) {
           />
           </View>
       </Modal>
+      <Modal visible={editPostOpen} animationType="fade" transparent={true}>
+        <View style={style.modalContainer}>
+          <TouchableWithoutFeedback onPress={() => setEditPostOpen(false)}>
+            <View style={style.modal}></View>
+          </TouchableWithoutFeedback>
+          <View style={style.modalContent}>
+            <TouchableOpacity
+              style={style.buttonBack}
+              onPress={() => setEditPostOpen(false)}>
+              <Feather
+                name="arrow-left"
+                size={22}
+                color='#000'
+              />
+              <Text style={{ color: '#000' }}>Voltar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[{ backgroundColor: "#428cfd" }, style.buttonModal]}
+              onPress={() => {
+                setEditPostOpen(false)
+                navigation.navigate("EditPost", { title: data.autor, data: data, type: true })
+              }}>
+              <Text style={[{ color: "#fff" }, style.buttonTextModal]}>EDITAR</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[{ backgroundColor: "#F64B57" }, style.buttonModal]}
+              onPress={async () => {
+                setEditPostOpen(false)
+                await deletePost()
+              }
+              }>
+              <Text style={[{ color: "#fff" }, style.buttonTextModal]}>DELETAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   )
 }
@@ -211,7 +304,7 @@ const style = StyleSheet.create({
     padding: 11,
   },
   header: {
-    width: '100%',
+    width: '95%',
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 5,
