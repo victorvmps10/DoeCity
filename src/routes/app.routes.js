@@ -13,7 +13,6 @@ import Search from '../pages/Search';
 import Donate from '../pages/Donate';
 import Feedback from '../pages/Feedback';
 import EditPost from '../pages/EditPost';
-import Messages from '../pages/Messages';
 
 export default function AppRoutes() {
   const AppTabs = createBottomTabNavigator();
